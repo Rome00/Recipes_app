@@ -1,18 +1,15 @@
 import Vue from 'vue'
 import VueRouter from 'vue-router'
-import firebase from 'firebase'
+import firebase from 'firebase/app'
 import Index from '@/views/Index.vue'
 import addItem from '@/components/addItem.vue'
 import signIn from '@/components/signIn.vue'
 import signUp from '@/components/signUp.vue'
+import editItems from '@/components/editItems.vue'
 
 Vue.use(VueRouter)
 
 const routes = [
-  {
-    path: '*',
-    redirect: '/'
-  },
   {
     path: '/',
     name: 'Index',
@@ -50,7 +47,13 @@ const routes = [
     path: '/Register',
     name: 'signUp',
     component: signUp
-  }
+  },
+  {
+    path: '/edit-recipes/:recipe_slug',
+    name: 'editItems',
+    component: editItems
+  },
+  { path: '*', redirect: '/' }
 ]
 
 const router = new VueRouter({
