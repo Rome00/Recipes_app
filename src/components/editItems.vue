@@ -1,6 +1,6 @@
 <template>
-  <div class="addItem container">
-    <h2 class="has-text-centered has-indigo-text">Add New Recipe</h2>
+  <div v-if="recipe" class="addItem container">
+    <h2 class="is-capitalized">Edit {{ recipe.title }} Recipe</h2>
     <form @submit.prevent class="is-relative">
       <!-- add title -->
       <div class="field">
@@ -12,7 +12,7 @@
             class="input is-info is-rounded"
             type="text"
             name="title"
-            v-model="title"
+            v-model="recipe.title"
             placeholder="Mojito"
             autocomplete="off"
           />
@@ -20,7 +20,7 @@
       </div>
       <!-- add title -->
 
-      <!-- add ingredients -->
+      <!-- update ingredients -->
       <div class="field">
         <label class="label has-grey-text text-darken-2" for="ingredients"
           >Add an ingredients:</label
@@ -33,7 +33,7 @@
             v-model="item"
             placeholder="white rum"
             autocomplete="off"
-            @keydown.tab.prevent="addIng"
+            @keydown.tab.prevent="updateItems"
             @input="iconReset"
           />
           <transition
@@ -43,7 +43,7 @@
             :duration="200"
           >
             <span
-              @click="addIng"
+              @click="updateItems"
               class="icon is-small is-right add-ingredient"
               :key="icon"
             >
@@ -56,7 +56,7 @@
           </transition>
         </div>
       </div>
-      <!-- add ingredients -->
+      <!-- update ingredients -->
 
       <!-- display  ingredients-->
       <div class="is-block">
@@ -70,7 +70,7 @@
         >
           <div
             class="column is-3 is-relative is-pl-small25 is-mb-1"
-            v-for="(item, index) in ingredients"
+            v-for="(item, index) in recipe.Ingredients"
             :key="index"
           >
             <span class="tag is-100">
@@ -98,7 +98,7 @@
               :min="0"
               :max="12"
               ticks
-              v-model="prepTime.hour"
+              v-model="recipe.preparing.hour"
             ></b-slider>
           </div>
           <div class="is-flex is-between is-vcenter">
@@ -111,7 +111,7 @@
               :min="0"
               :max="60"
               ticks
-              v-model="prepTime.minutes"
+              v-model="recipe.preparing.minutes"
             ></b-slider>
           </div>
         </div>
@@ -131,7 +131,7 @@
               :min="0"
               :max="12"
               ticks
-              v-model="cookTime.hour"
+              v-model="recipe.cook.hour"
             ></b-slider>
           </div>
           <div class="is-flex is-between is-vcenter">
@@ -144,7 +144,7 @@
               :min="0"
               :max="60"
               ticks
-              v-model="cookTime.minutes"
+              v-model="recipe.cook.minutes"
             ></b-slider>
           </div>
         </div>
@@ -178,9 +178,12 @@
       <!-- add image -->
 
       <!-- image prew -->
-      <div class="box addImage" v-if="imageUrl">
-        <figure class="image is-16by9">
-          <img :src="imageUrl" />
+      <div class="box addImage">
+        <figure class="image is-16by9" v-if="image">
+          <img class="" :src="imageUrl" />
+        </figure>
+        <figure class="image is-16by9" v-else>
+          <img :src="recipe.imageUrl" />
         </figure>
       </div>
       <!-- image prew -->
@@ -192,7 +195,7 @@
             class="textarea has-fixed-size"
             placeholder="add method and press  'Tab'"
             v-model="methodItem"
-            @keydown.tab="addPrepMethods"
+            @keydown.tab="updatePrepMethods"
           ></textarea>
         </div>
       </div>
@@ -210,7 +213,7 @@
         >
           <div
             class="column is-relative if-full is-pl-small25"
-            v-for="(item, index) in prepMethods"
+            v-for="(item, index) in recipe.methods"
             :key="index"
           >
             <span class="tag is-100">
@@ -232,7 +235,7 @@
         <p v-if="feedback" class="has-text-danger">{{ feedback }}</p>
         <p v-if="prepFeedback" class="has-text-danger">{{ prepFeedback }}</p>
         <button class="button is-link is-rounded" @click="onSubmit">
-          Add Item
+          Update Item
         </button>
       </div>
     </form>
@@ -242,47 +245,76 @@
 <script>
 import firebase from 'firebase/app'
 import slugify from 'slugify'
-import { mapGetters } from 'vuex'
 
 export default {
-  name: 'addItem',
+  name: 'editItems',
   data() {
     return {
-      title: null,
-      cookTime: {
-        hour: 0,
-        minutes: 0
-      },
-      prepTime: {
-        hour: 0,
-        minutes: 0
-      },
+      recipe: null,
       item: null,
-      ingredients: [],
       methodItem: null,
-      prepMethods: [],
       feedback: null,
       prepFeedback: null,
       icon: 'add',
-      slug: null,
       imageUrl: null,
       image: null
     }
   },
+  created() {
+    let ref = firebase
+      .firestore()
+      .collection('allRecipes')
+      .where('slug', '==', this.$route.params.recipe_slug)
+    ref.get().then(snaps => {
+      snaps.forEach(doc => {
+        this.recipe = doc.data()
+        this.recipe.id = doc.id
+      })
+    })
+  },
   computed: {
-    ...mapGetters(['user']),
-    check() {
-      return this.item !== null && this.item.length >= 3
-    },
+    // calc full time
     fullCookTime() {
       let fullTime = {
-        hour: this.prepTime.hour + this.cookTime.hour,
-        minutes: this.prepTime.minutes + this.cookTime.minutes
+        hour: this.recipe.preparing.hour + this.recipe.cook.hour,
+        minutes: this.recipe.preparing.minutes + this.recipe.cook.minutes
       }
       return fullTime
     }
   },
   methods: {
+    updateItems() {
+      if (this.item) {
+        this.recipe.Ingredients.push(this.item)
+        this.item = null
+        this.feedback = null
+        this.icon = 'check'
+      } else {
+        this.feedback = 'You must enter ingredients'
+      }
+    },
+    updatePrepMethods() {
+      if (this.methodItem) {
+        this.recipe.methods.push(this.methodItem)
+        this.methodItem = null
+        this.prepFeedback = null
+      } else {
+        this.prepFeedback = 'You must enter methods'
+      }
+    },
+    // remove ingredients before submit
+    removeItem(item) {
+      this.recipe.Ingredients = this.recipe.Ingredients.filter(id => {
+        return id != item
+      })
+    },
+    // remove methoods before submit
+    removeMethod(item) {
+      this.recipe.methods = this.recipe.methods.filter(id => {
+        return id != item
+      })
+    },
+    // add image
     imgUpload(event) {
       const files = event.target.files
       let fileName = files[0].name
@@ -296,158 +328,85 @@ export default {
       fileReader.readAsDataURL(files[0])
       this.image = files[0]
     },
-    // add items to firebase
+    // icon change
+    iconReset() {
+      this.icon = 'add'
+    },
+    //update firebase
     onSubmit() {
+      // if image change
       if (
-        this.title != null &&
-        this.ingredients.length >= 1 &&
-        this.cookTime !== null &&
-        this.prepTime !== null &&
-        this.prepMethods.length >= 1
+        this.recipe.title != null &&
+        this.recipe.Ingredients.length >= 1 &&
+        this.recipe.cook !== null &&
+        this.recipe.preparing !== null &&
+        this.recipe.methods.length >= 1 &&
+        this.image !== null
       ) {
         this.feedback = null
         // create slug
-        this.slug = slugify(this.title, {
+        this.recipe.slug = slugify(this.recipe.title, {
           replacement: '-',
           remove: /[$*_+~.()'"!\-:@]/g,
           lower: true
         })
-        let imageUrl
-        let key
-        const filename = this.image.name
-        const ext = filename.slice(filename.lastIndexOf('.'))
-        // add to firebase db
+        const ext = this.image.name.slice(this.image.name.lastIndexOf('.'))
+        // delete image from firebase
         firebase
-          .firestore()
-          .collection('allRecipes')
-          .add({
-            title: this.title,
-            Ingredients: this.ingredients,
-            slug: this.slug,
-            prepTime: this.prepTime,
-            methods: this.prepMethods,
-            imageUrl: this.imageUrl,
-            preparing: this.prepTime,
-            cook: this.cookTime,
-            ready_in: this.fullCookTime,
-            userID: this.user.data.userID,
-            ext: ext
-          })
-          .then(docRef => {
-            key = docRef.id
+          .storage()
+          .ref('allRecipes/' + this.recipe.id + this.recipe.ext)
+          .delete()
+          // add new image
+          .then(() => {
             return firebase
               .storage()
-              .ref('allRecipes/' + key + ext)
+              .ref('allRecipes/' + this.recipe.id + ext)
               .put(this.image)
           })
           .then(fileData => {
             return fileData.ref.getDownloadURL()
           })
+          // update imageUrl in database
           .then(data => {
-            imageUrl = data
+            let imageUrl = data
             firebase
               .firestore()
               .collection('allRecipes')
-              .doc(key)
+              .doc(this.recipe.id)
               .update({ imageUrl: imageUrl })
+            this.$router.push({ name: 'Index' })
+          })
+      } else if (
+        // not change image
+        this.recipe.title != null &&
+        this.recipe.Ingredients.length >= 1 &&
+        this.recipe.cook !== null &&
+        this.recipe.preparing !== null &&
+        this.recipe.methods.length >= 1 &&
+        this.image === null
+      ) {
+        firebase
+          .firestore()
+          .collection('allRecipes')
+          .doc(this.recipe.id)
+          .update({
+            title: this.recipe.title,
+            Ingredients: this.recipe.Ingredients,
+            slug: this.recipe.slug,
+            methods: this.recipe.methods,
+            preparing: this.recipe.preparing,
+            cook: this.recipe.cook,
+            ready_in: this.fullCookTime
+          })
+          .then(() => {
             this.$router.push({ name: 'Index' })
           })
       } else {
         this.feedback = 'please fill all forms'
       }
-    },
-    // add items before submit
-    addIng() {
-      if (this.item) {
-        this.ingredients.push(this.item)
-        this.item = null
-        this.feedback = null
-        this.icon = 'check'
-      } else {
-        this.feedback = 'You must enter ingredients'
-      }
-    },
-    // remove ingredients before submit
-    removeItem(item) {
-      this.ingredients = this.ingredients.filter(id => {
-        return id != item
-      })
-    },
-    // add methods before submit
-    addPrepMethods() {
-      if (this.methodItem) {
-        this.prepMethods.push(this.methodItem)
-        this.methodItem = null
-        this.prepFeedback = null
-      } else {
-        this.prepFeedback = 'You must enter methods'
-      }
-    },
-    // remove methoods before submit
-    removeMethod(item) {
-      this.prepMethods = this.prepMethods.filter(id => {
-        return id != item
-      })
-    },
-    iconReset() {
-      this.icon = 'add'
     }
   }
 }
 </script>
 
-<style lang="scss">
-.addItem {
-  margin-top: 30px;
-  padding: 20px;
-  max-width: 600px;
-  h2 {
-    font-size: 1.8em;
-    margin: 25px auto;
-    font-weight: 500;
-  }
-  .is-timepick {
-    flex-direction: column;
-  }
-  .field {
-    margin: 25px auto;
-    .add-ingredient {
-      cursor: pointer !important;
-      pointer-events: auto !important;
-    }
-  }
-  .submit-form {
-    margin: 10px auto;
-    button {
-      margin-top: 10px;
-    }
-    p {
-      font-size: 14px;
-    }
-  }
-  .addImage {
-    padding: 0.5rem;
-    max-width: 640px;
-  }
-  .ingredients-box {
-    display: flex;
-    flex-wrap: wrap;
-    .tag {
-      padding: 1.15rem 1rem 1.15rem 1rem;
-      font-size: 13px;
-      border: #48c774 solid 1px;
-      button {
-        position: absolute;
-        top: 6px;
-        right: 12px;
-        background-color: rgba(10, 10, 10, 0.7);
-        transition: background-color 0.3s ease-in;
-        &:hover {
-          background-color: rgb(192, 35, 35);
-          transition: background-color 0.3s ease-in;
-        }
-      }
-    }
-  }
-}
-</style>
+<style lang="scss" scoped></style>
