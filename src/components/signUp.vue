@@ -6,7 +6,7 @@
           <h2 class="title has-text-centered is-pt-1">Resgister</h2>
           <div class="field">
             <label class="label has-grey-text text-darken-2" for="title"
-              >Disolay Name:</label
+              >Display Name:</label
             >
             <p class="control has-icons-left has-icons-right">
               <input
