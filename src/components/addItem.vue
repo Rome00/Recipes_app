@@ -180,7 +180,7 @@
       <!-- image prew -->
       <div class="box addImage" v-if="imageUrl">
         <figure class="image is-16by9">
-          <img class="" :src="imageUrl" />
+          <img :src="imageUrl" />
         </figure>
       </div>
       <!-- image prew -->
@@ -240,7 +240,7 @@
 </template>
 
 <script>
-import firebase from 'firebase'
+import firebase from 'firebase/app'
 import slugify from 'slugify'
 import { mapGetters } from 'vuex'
 
@@ -314,6 +314,8 @@ export default {
         })
         let imageUrl
         let key
+        const filename = this.image.name
+        const ext = filename.slice(filename.lastIndexOf('.'))
         // add to firebase db
         firebase
           .firestore()
@@ -328,12 +330,11 @@ export default {
             preparing: this.prepTime,
             cook: this.cookTime,
             ready_in: this.fullCookTime,
-            userID: this.user.data.userID
+            userID: this.user.data.userID,
+            ext: ext
           })
           .then(docRef => {
             key = docRef.id
-            const filename = this.image.name
-            const ext = filename.slice(filename.lastIndexOf('.'))
             return firebase
               .storage()
               .ref('allRecipes/' + key + ext)
@@ -352,7 +353,7 @@ export default {
             this.$router.push({ name: 'Index' })
           })
           .catch(err => {
-            console.log(err)
+            alert(err)
           })
       } else {
         this.feedback = 'please fill all forms'
@@ -398,7 +399,7 @@ export default {
 }
 </script>
 
-<style lang="scss" scoped>
+<style lang="scss">
 .addItem {
   margin-top: 30px;
   padding: 20px;
@@ -414,8 +415,8 @@ export default {
   .field {
     margin: 25px auto;
     .add-ingredient {
-      cursor: pointer;
-      pointer-events: auto;
+      cursor: pointer !important;
+      pointer-events: auto !important;
     }
   }
   .submit-form {
@@ -429,6 +430,7 @@ export default {
   }
   .addImage {
     padding: 0.5rem;
+    max-width: 640px;
   }
   .ingredients-box {
     display: flex;

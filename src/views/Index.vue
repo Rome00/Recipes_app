@@ -9,14 +9,30 @@
         <div class="card is-grey lighten-5">
           <div class="columns is-multiline">
             <div class="column is-two-fifths">
-              <div class="card-image">
-                <figure class="image is-4by3">
+              <div class="card-image is-mt-2-half is-ml-small25">
+                <figure class="image is-square">
                   <img :src="recipe.imageUrl" :alt="recipe.slug" />
                 </figure>
               </div>
             </div>
             <div class="column">
               <div class="card-content">
+                <!-- edit Item -->
+                <router-link
+                  :to="{
+                    name: 'editItems',
+                    params: { recipe_slug: recipe.slug }
+                  }"
+                  tag="button"
+                  class="edit-icon button"
+                >
+                  <div class="icon is-small">
+                    <i class="material-icons ">edit</i>
+                  </div>
+                </router-link>
+
+                <!-- edit Item -->
+
                 <!-- delete item -->
                 <div class="icon delete-icon">
                   <i class="material-icons" @click="deleteItem(recipe.id)"
@@ -49,11 +65,14 @@
                   </span>
                   <div class="timing-box">
                     prep.
-                    <span v-if="recipe.prepTime.hour > 0" class="has-teal-text">
-                      {{ recipe.prepTime.hour }}h :
+                    <span
+                      v-if="recipe.preparing.hour > 0"
+                      class="has-teal-text"
+                    >
+                      {{ recipe.preparing.hour }}h :
                     </span>
                     <span class="has-teal-text">
-                      {{ recipe.prepTime.minutes }}m
+                      {{ recipe.preparing.minutes }}m
                     </span>
                   </div>
                 </div>
@@ -108,7 +127,7 @@
 </template>
 
 <script>
-import firebase from 'firebase'
+import firebase from 'firebase/app'
 import { mapGetters } from 'vuex'
 
 export default {
@@ -161,6 +180,34 @@ export default {
   margin-top: 60px;
   .timing-box {
     padding-left: 10px;
+  }
+  .edit-icon {
+    position: absolute;
+    bottom: -20px;
+    right: 10px;
+    color: #e8e5e5;
+    border-color: #662974;
+    cursor: pointer;
+    border-radius: 50%;
+    box-shadow: 0px 3px 5px -1px rgba(0, 0, 0, 0.2),
+      0px 6px 10px 0px rgba(0, 0, 0, 0.14), 0px 1px 18px 0px rgba(0, 0, 0, 0.12);
+    transition: box-shadow 280ms cubic-bezier(0.4, 0, 0.2, 1),
+      opacity 15ms linear 30ms, transform 270ms 0ms cubic-bezier(0, 0, 0.2, 1);
+    background-color: #662974;
+    width: 40px;
+    height: 40px;
+    &::active {
+      box-shadow: 0 7px 8px 4px rgba(0, 0, 0, 0.2) 0 12px 17px 2px
+        rgba(0, 0, 0, 0.14) 0 5px 22px 4px rgba(0, 0, 0, 0.12);
+    }
+    &::hover {
+      box-shadow: 0 5px 5px -3px rgba(0, 0, 0, 0.2) 0 8px 10px 1px rgba(
+          0,
+          0,
+          0,
+          0.14
+        ) 0 3px 14px 2px rgba(0, 0, 0, 0.12);
+    }
   }
   .delete-icon {
     position: absolute;
@@ -238,6 +285,10 @@ export default {
     li {
       align-items: baseline;
     }
+  }
+  .image {
+    border-radius: 6px;
+    overflow: hidden;
   }
 }
 </style>

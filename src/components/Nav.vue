@@ -89,7 +89,7 @@
 
 <script>
 import { mapGetters } from 'vuex'
-import firebase from 'firebase'
+import firebase from 'firebase/app'
 
 export default {
   name: 'navbar',
