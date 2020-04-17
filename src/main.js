@@ -2,16 +2,25 @@ import Vue from 'vue'
 import App from './App.vue'
 import router from './router'
 import store from './store'
+
+//firebase
 import firebase from 'firebase/app'
 import 'firebase/auth'
 import 'firebase/firestore'
 import 'firebase/storage'
+
+//Vuelidate
+import Vuelidate from 'vuelidate'
+Vue.use(Vuelidate)
+
+//bulma
 import Buefy from 'buefy'
 import 'buefy/dist/buefy.css'
+Vue.use(Buefy)
 
+//animated css
 require('vue2-animate/dist/vue2-animate.min.css')
 
-Vue.use(Buefy)
 import '@/assets/Sass/main.scss'
 
 // global filter for Shorten

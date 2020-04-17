@@ -71,7 +71,7 @@
           <div
             class="column is-3 is-relative is-pl-small25 is-mb-1"
             v-for="(item, index) in recipe.Ingredients"
-            :key="index"
+            :key="index + '_item'"
           >
             <span class="tag is-100">
               {{ item | shortText(10) }}
@@ -214,7 +214,7 @@
           <div
             class="column is-relative if-full is-pl-small25"
             v-for="(item, index) in recipe.methods"
-            :key="index"
+            :key="index + '_item'"
           >
             <span class="tag is-100">
               <span class="has-amber-text text-darken-3 is-pr-0-half"
