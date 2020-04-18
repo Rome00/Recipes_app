@@ -5,7 +5,7 @@
         <div class="columns is-mobile">
           <div class="column is-one-third ">
             <figure class="image is-square cheaf">
-              <img src="../assets/cheaf.png" alt="cheaf" />
+              <img src="../assets/img/cheaf.png" alt="cheaf" />
             </figure>
           </div>
           <div class="column is-flex is-vcenter is-mt-2-mobile">

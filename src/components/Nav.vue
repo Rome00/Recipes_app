@@ -3,7 +3,7 @@
     <div class="container">
       <div class="navbar-brand">
         <router-link class="navbar-item has-text-black" :to="{ name: 'Index' }">
-          Add Recipes
+          Recipes
         </router-link>
         <div
           :class="[{ 'is-active': isActive }, 'navbar-burger burger']"
