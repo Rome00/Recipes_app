@@ -104,7 +104,9 @@
                   :class="{
                     'is-danger': $v.form.password.$error,
                     'is-success':
-                      $v.form.password.required && $v.form.password.minLength
+                      $v.form.password.required &&
+                      $v.form.password.minLength &&
+                      $v.form.password.strongPassword
                   }"
                   v-model.trim="$v.form.password.$model"
                 />
@@ -115,7 +117,11 @@
                 <!--ANCHOR error & success icon -->
                 <Icon v-if="$v.form.password.$error" value="error" />
                 <Icon
-                  v-if="$v.form.password.required && $v.form.password.minLength"
+                  v-if="
+                    $v.form.password.required &&
+                      $v.form.password.minLength &&
+                      $v.form.password.strongPassword
+                  "
                   value="check"
                 />
                 <!-- error & success icon -->
@@ -132,6 +138,15 @@
                     v-if="!$v.form.password.minLength"
                     >Password must have at least
                     {{ $v.form.password.$params.minLength.min }} letters.</span
+                  >
+                  <span
+                    class="has-text-danger"
+                    v-if="
+                      !$v.form.password.strongPassword &&
+                        $v.form.password.minLength &&
+                        $v.form.password.required
+                    "
+                    >Password must have special character</span
                   >
                 </div>
                 <!-- error message -->
@@ -215,7 +230,13 @@
 <script>
 import firebase from 'firebase/app'
 import Icon from '@/components/icon.vue'
-import { required, sameAs, minLength, email } from 'vuelidate/lib/validators'
+import {
+  required,
+  sameAs,
+  minLength,
+  email,
+  helpers
+} from 'vuelidate/lib/validators'
 
 export default {
   name: 'singUp',
@@ -246,7 +267,14 @@ export default {
       },
       password: {
         required,
-        minLength: minLength(6)
+        minLength: minLength(6),
+        strongPassword(password) {
+          return (
+            /[a-z]/.test(password) &&
+            /[0-9]/.test(password) &&
+            /\W|_/.test(password)
+          )
+        }
       },
       repeatPassword: {
         required,
@@ -256,12 +284,16 @@ export default {
   },
   methods: {
     creatUser() {
-      if (this.$v.$anyError) {
+      if (!this.$v.$anyError) {
         firebase
           .auth()
           .createUserWithEmailAndPassword(this.form.email, this.form.password)
           .then(data => {
-            this.$router.replace({ name: 'signIn' })
+            data.user.updateProfile({
+              displayName: this.form.name
+            })
+            this.$store.dispatch('fetchUser', data.user.displayName)
+            this.$router.replace({ name: 'Index' })
           })
           .catch(err => {
             this.error = err.message
