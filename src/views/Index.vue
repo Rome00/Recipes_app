@@ -1,7 +1,32 @@
 <template>
   <div class="index container">
-    <div class="columns is-multiline">
+    <div class="columns is-centered is-mobile">
+      <div class="column is-four-fifths-mobile is-mt-5" v-if="!recipes.length">
+        <div class="columns is-mobile">
+          <div class="column is-one-third ">
+            <figure class="image is-square cheaf">
+              <img src="../assets/cheaf.png" alt="cheaf" />
+            </figure>
+          </div>
+          <div class="column is-flex is-vcenter is-mt-2-mobile">
+            <h1 class="is-size-2">
+              You don't have a recipe yet, please add
+              <router-link
+                @mouseover.native="hover = true"
+                @mouseleave.native="hover = false"
+                :class="{ pulse: hover }"
+                class="has-text-info animated infinite is-inline-block"
+                :to="{ name: 'addItem' }"
+                tag="a"
+              >
+                new recipe
+              </router-link>
+            </h1>
+          </div>
+        </div>
+      </div>
       <div
+        v-else
         class="column is-half is-mb-2"
         v-for="recipe in recipes"
         :key="recipe.id"
@@ -134,7 +159,8 @@ export default {
   name: 'index',
   data() {
     return {
-      recipes: []
+      recipes: [],
+      hover: false
     }
   },
   computed: {
@@ -180,6 +206,9 @@ export default {
   margin-top: 60px;
   .timing-box {
     padding-left: 10px;
+  }
+  .cheaf img {
+    transform: scaleX(-1);
   }
   .edit-icon {
     position: absolute;
@@ -289,6 +318,30 @@ export default {
   .image {
     border-radius: 6px;
     overflow: hidden;
+  }
+}
+// pulse animation
+.animated {
+  animation-duration: 2s;
+  animation-fill-mode: both;
+}
+.animated.infinite {
+  animation-iteration-count: infinite;
+}
+.pulse {
+  animation-name: pulse;
+}
+@keyframes pulse {
+  from {
+    transform: scale3d(1, 1, 1);
+  }
+
+  50% {
+    transform: scale3d(1.05, 1.05, 1.05);
+  }
+
+  to {
+    transform: scale3d(1, 1, 1);
   }
 }
 </style>
